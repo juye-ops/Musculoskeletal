@@ -1,27 +1,26 @@
 import os
 import argparse
-from tensorflow.keras.applications.vgg16 import VGG16
+import json
 
 from utils.convert import *
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-f", "--frame_rate", default = 6, help = "n 프레임 당 한 이미지 저장 (낮을수록 학습량 증가)")
-parser.add_argument("-l", "--lstm", default = 15, help = "LSTM 간격 (낮을수록 학습량 증가)")
-parser.add_argument("-i", "--img_size", default = 112, help = "이미지 Resize 크기 (높을수록 학습량 n^2배 증가)")
-
-src = '학습영상(표준운동)39가지/' # 데이터셋 폴더 명
+parser.add_argument("-d", "--dataset", default = "dataset/학습영상(표준운동)39가지/", type=str, help = "데이터셋 폴더 명")
+parser.add_argument("-f", "--frame_rate", default = 6, type=int, help = "n 프레임 당 한 이미지 저장 (낮을수록 학습량 증가)")
+parser.add_argument("-l", "--lstm", default = 15, type=int, help = "LSTM 간격 (낮을수록 학습량 증가)")
+parser.add_argument("-i", "--img_size", default = 112, type=int, help = "이미지 Resize 크기 (높을수록 학습량 n^2배 증가)")
 
 
 args = parser.parse_args()
 
+dataset = args.dataset
 FRAME_PER_RATE = args.frame_rate
 IMG_SIZE = args.img_size
 DEVIDER = args.lstm
 
-framelist, datalist, actions = video_to_frame(src, FRAME_PER_RATE, IMG_SIZE, DEVIDER)
-base_model = VGG16(weights='imagenet', include_top=False)
-X_train, X_data, y_data = extract_features(base_model, framelist, datalist, actions, DEVIDER)
+framelist, datalist, actions = video_to_frame(dataset, FRAME_PER_RATE, IMG_SIZE, DEVIDER)
+X_train, X_data, y_data, feature_size = extract_features(framelist, datalist, actions, DEVIDER)
 
 from sklearn.model_selection import train_test_split
 X_data=X_data.astype(np.float32)
@@ -44,3 +43,18 @@ print(xj_train.shape,yj_train.shape)
 print(xj_val.shape, yj_val.shape)
 print(xj_test.shape, yj_test.shape)
 print('-----')
+
+np.save("dataset/xf_train.npy", xf_train)
+np.save("dataset/yf_train.npy", yf_train)
+np.save("dataset/xf_val.npy", xf_val)
+np.save("dataset/yf_val.npy", yf_val)
+
+np.save("dataset/xj_train.npy", xj_train)
+np.save("dataset/yj_train.npy", yj_train)
+np.save("dataset/xj_val.npy", xj_val)
+np.save("dataset/yj_val.npy", yj_val)
+
+f = open("dataset/configuration.json", "w")
+
+
+json.dump({"shape": (xf_train.shape[1:3], xj_train.shape[1:3]), "FRAME_PER_RATE": FRAME_PER_RATE, "IMG_SIZE": IMG_SIZE, "DEVIDER": DEVIDER, "feature_size": feature_size}, f)
