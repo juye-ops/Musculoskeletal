@@ -8,7 +8,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("-d", "--dataset", default = "dataset/학습영상(표준운동)39가지/", type=str, help = "데이터셋 폴더 명")
 parser.add_argument("-f", "--frame_rate", default = 6, type=int, help = "n 프레임 당 한 이미지 저장 (낮을수록 학습량 증가)")
-parser.add_argument("-l", "--lstm", default = 15, type=int, help = "LSTM 간격 (낮을수록 학습량 증가)")
+parser.add_argument("-l", "--lstm", default = 15, type=int, help = "LSTM 구간 범위 (낮을수록 학습량 증가)")
 parser.add_argument("-i", "--img_size", default = 112, type=int, help = "이미지 Resize 크기 (높을수록 학습량 n^2배 증가)")
 
 
