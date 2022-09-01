@@ -3,6 +3,8 @@ import cv2
 import json
 import numpy as np
 
+from tensorflow.keras.applications.vgg16 import VGG16
+
 def video_to_frame(src, FRAME_PER_RATE, IMG_SIZE, DEVIDER):
     alist = []
     datalist = []
@@ -73,7 +75,8 @@ def video_to_frame(src, FRAME_PER_RATE, IMG_SIZE, DEVIDER):
 
     return framelist, datalist, actions
 
-def extract_features(base_model, framelist, datalist, actions, DEVIDER):
+def extract_features(framelist, datalist, actions, DEVIDER):
+    base_model = VGG16(weights='imagenet', include_top=False)
     X_train = base_model.predict(framelist)  # *** 특징 추출을 통한 경량화 ***
 
     t = X_train.shape
@@ -83,13 +86,7 @@ def extract_features(base_model, framelist, datalist, actions, DEVIDER):
 
     X_data = x_data[:, :, :-1]
     labels = x_data[:, 0, -1]
-    print(X_train.shape)
-    print(X_data.shape)
-    print(labels)
-
-    print(actions)
-
     from tensorflow.keras.utils import to_categorical
     y_data = to_categorical(labels, num_classes=len(actions))
 
-    return X_train, X_data, y_data
+    return X_train, X_data, y_data, feature_size
